@@ -1,4 +1,4 @@
-//#include "../freetype-gl-cpp.h".h"
+#include "../freetype-gl-cpp.h"
 #include <GLFW/glfw3.h>
 
 int main(void)
@@ -13,16 +13,13 @@ int main(void)
     }
     glfwMakeContextCurrent(window);
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
-        /* Render here */
+    FreetypeGL text_renderer;
+
+    while (!glfwWindowShouldClose(window)){
         glClear(GL_COLOR_BUFFER_BIT);
+        //text_renderer.renderText("test");
 
-        /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
-        /* Poll for and process events */
         glfwPollEvents();
     }
 
