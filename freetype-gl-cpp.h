@@ -15,17 +15,47 @@
 //const std::string R"
 //namespace ftgl {
 
-class FreetypeGL {
-public:
-    FreetypeGL(bool add_default_font=true);
-    FreetypeGL(const FreetypeGL& that) = delete;
-    FreetypeGL& operator=(const FreetypeGL& other) = delete;
+//constexpr char* test = R"foo(
+//#include "/home/martin/Code/freetype-gl-cpp/external/freetype-gl/shaders/text.frag"
+//)foo";
 
+constexpr char *test =
+#include "generated/text.frag"
+;
+
+struct FreetypeGlText {
+
+};
+
+
+class FreetypeGl {
+public:
+    FreetypeGl();
+    FreetypeGl(const FreetypeGl& that) = delete;
+    FreetypeGl& operator=(const FreetypeGl& other) = delete;
+
+    /**
+     * @brief renderText
+     * @param text
+     */
     void renderText(const std::string& text){
 
     }
+
+    void renderText(const FreetypeGlText& text){
+
+    }
+
+    const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
+    const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
+    const vec4 COLOR_YELLOW = {{1.0, 1.0, 0.0, 1.0}};
+    const vec4 COLOR_GREY   = {{0.5, 0.5, 0.5, 1.0}};
+    const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
+
 private:
     font_manager_t* font_manager;
+    markup_t default_markup;
 };
+
 
 //}

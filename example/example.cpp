@@ -1,5 +1,6 @@
 #include "../freetype-gl-cpp.h"
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 int main(void)
 {
@@ -13,11 +14,12 @@ int main(void)
     }
     glfwMakeContextCurrent(window);
 
-    FreetypeGL text_renderer;
+    FreetypeGl text_renderer;
+    std::cout << test << std::endl;
 
     while (!glfwWindowShouldClose(window)){
         glClear(GL_COLOR_BUFFER_BIT);
-        //text_renderer.renderText("test");
+        text_renderer.renderText("test");
 
         glfwSwapBuffers(window);
         glfwPollEvents();
