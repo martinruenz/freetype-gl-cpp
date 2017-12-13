@@ -13,9 +13,9 @@ int main(void)
         return -1;
     }
     glfwMakeContextCurrent(window);
+    if(glewInit() != GLEW_OK) throw std::runtime_error("Unable to initialise glew.");
 
     FreetypeGl text_renderer;
-    std::cout << test << std::endl;
 
     while (!glfwWindowShouldClose(window)){
         glClear(GL_COLOR_BUFFER_BIT);

@@ -12,15 +12,14 @@
 #include "demos/mat4.h"
 #include "demos/screenshot-util.h"
 
-//const std::string R"
-//namespace ftgl {
+namespace ftgl {
 
-//constexpr char* test = R"foo(
-//#include "/home/martin/Code/freetype-gl-cpp/external/freetype-gl/shaders/text.frag"
-//)foo";
-
-constexpr char *test =
+constexpr char* shader_text_frag = (char*)
 #include "generated/text.frag"
+;
+
+constexpr char* shader_text_vert = (char*)
+#include "generated/text.vert"
 ;
 
 struct FreetypeGlText {
@@ -53,9 +52,14 @@ public:
     const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
 
 private:
+
+    GLuint compileShader(const char* source, const GLenum type);
+    GLuint loadShader(char* frag, char* vert);
+
+    GLuint text_shader = 0;
     font_manager_t* font_manager;
     markup_t default_markup;
 };
 
 
-//}
+}
