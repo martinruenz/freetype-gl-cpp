@@ -2,33 +2,31 @@
 
 #include <cstring>
 #include <vector>
+#include <iostream>
 #include <stdexcept>
 
 namespace ftgl {
 
 FreetypeGl::FreetypeGl(){
     font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
-    default_markup = {
-        family  : (char*)"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        size    : 24.0,
-        bold    : 0,
-        italic  : 0,
-        spacing : 0.0,
-        gamma   : 2.,
-        foreground_color    : COLOR_WHITE,
-        background_color    : COLOR_NONE,
-        outline             : 0,
-        outline_color       : COLOR_NONE,
-        underline           : 0,
-        underline_color     : COLOR_WHITE,
-        overline            : 0,
-        overline_color      : COLOR_WHITE,
-        strikethrough       : 0,
-        strikethrough_color : COLOR_WHITE,
-        font : 0
-    };
-
+    default_markup.family = (char*)"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+    default_markup.size   = 24.0;
+    default_markup.bold   = 0;
+    default_markup.italic = 0;
+    default_markup.spacing= 0.0;
+    default_markup.gamma  = 2.;
+    default_markup.foreground_color   = COLOR_WHITE;
+    default_markup.background_color   = COLOR_NONE;
+    default_markup.outline            = 0;
+    default_markup.outline_color      = COLOR_NONE;
+    default_markup.underline          = 0;
+    default_markup.underline_color    = COLOR_WHITE;
+    default_markup.overline           = 0;
+    default_markup.overline_color     = COLOR_WHITE;
+    default_markup.strikethrough      = 0;
+    default_markup.strikethrough_color= COLOR_WHITE;
     default_markup.font = font_manager_get_from_markup(font_manager, &default_markup);
+
     glGenTextures(1, &font_manager->atlas->id);
     glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -39,7 +37,51 @@ FreetypeGl::FreetypeGl(){
                   font_manager->atlas->height, 0, GL_RGB, GL_UNSIGNED_BYTE,
                   font_manager->atlas->data );
 
-    loadShader(shader_text_frag, shader_text_vert);
+    text_shader = loadShader(shader_text_frag, shader_text_vert);
+
+    buffer = text_buffer_new( );
+    vec2 pen = {{80,20}};
+    text_buffer_printf(buffer, &pen, &default_markup, "TTTTTTeeeeeeeasdfasdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asf eeeessssssttttt", NULL);
+    text_buffer_align( buffer, &pen, ALIGN_CENTER );
+
+    vec4 bounds = text_buffer_get_bounds( buffer, &pen );
+    std::cout << "bounds " << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << " " << std::endl;
+
+}
+
+FreetypeGl::~FreetypeGl(){
+    glDeleteTextures(1, &font_manager->atlas->id);
+    font_manager_delete(font_manager);
+    glDeleteProgram(text_shader);
+}
+
+
+void FreetypeGl::renderText(const std::string &text){
+    glColor4f(1.00,1.00,1.00,1.00);
+    glUseProgram(text_shader);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, identity.data);
+    glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
+    glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
+                 1.0f/font_manager->atlas->width,
+                 1.0f/font_manager->atlas->height,
+                 (float)font_manager->atlas->depth );
+
+    glEnable( GL_BLEND );
+
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
+
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glBlendColor( 1, 1, 1, 1 );
+
+    vertex_buffer_render( buffer->buffer, GL_TRIANGLES );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBlendColor( 0, 0, 0, 0 );
+    glUseProgram( 0 );
+
+    //text_buffer_delete( buffer );
 }
 
 GLuint FreetypeGl::compileShader(const char* source, const GLenum type){

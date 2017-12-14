@@ -32,24 +32,23 @@ public:
     FreetypeGl();
     FreetypeGl(const FreetypeGl& that) = delete;
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
+    ~FreetypeGl();
 
     /**
      * @brief renderText
      * @param text
      */
-    void renderText(const std::string& text){
+    void renderText(const std::string& text);
 
-    }
-
-    void renderText(const FreetypeGlText& text){
-
-    }
+    void renderText(const FreetypeGlText& text);
+    text_buffer_t* buffer;
 
     const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
     const vec4 COLOR_YELLOW = {{1.0, 1.0, 0.0, 1.0}};
     const vec4 COLOR_GREY   = {{0.5, 0.5, 0.5, 1.0}};
     const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
+    const mat4 identity = {{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}};
 
 private:
 

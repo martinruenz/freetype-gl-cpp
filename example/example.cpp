@@ -17,9 +17,10 @@ int main(void)
 
     FreetypeGl text_renderer;
 
+    glClearColor(0.40,0.40,0.45,1.00);
     while (!glfwWindowShouldClose(window)){
-        glClear(GL_COLOR_BUFFER_BIT);
-        text_renderer.renderText("test");
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        text_renderer.renderText("test asdfasdf asdf asdf asdf asdf asdf asdf asdf ");
 
         glfwSwapBuffers(window);
         glfwPollEvents();
