@@ -28,27 +28,7 @@ FreetypeGl::FreetypeGl(){
     default_markup.strikethrough_color= COLOR_WHITE;
     default_markup.font = font_manager_get_from_markup(font_manager, &default_markup);
 
-
-
     text_shader = loadShader(shader_text_frag, shader_text_vert);
-
-    //buffer = text_buffer_new( );
-    //vec2 pen = {{80,20}};
-    //text_buffer_printf(buffer, &pen, &default_markup, "f", NULL);
-    //text_buffer_align( buffer, &pen, ALIGN_CENTER );
-
-    std::cout << static_cast<unsigned>('a') << " "
-              << static_cast<unsigned>('b') << " "
-              << static_cast<unsigned>('z') << " "
-              << static_cast<unsigned>('A') << " "
-              << static_cast<unsigned>('B') << " "
-              << static_cast<unsigned>('Z') << " "
-              << std::endl;
-
-//    vec4 bounds = text_buffer_get_bounds( buffer, &pen );
-//    std::cout << "bounds " << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << " " << std::endl;
-//    std::cout << "atlas texture-id: " << font_manager->atlas->id << std::endl;
-
 
     addLatin1Alphabet();
     updateTexture();
