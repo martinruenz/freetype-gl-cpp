@@ -10,7 +10,8 @@ namespace ftgl {
 FreetypeGl::FreetypeGl(){
     font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
     default_markup.family = (char*)"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-    default_markup.size   = 24.0;
+    //default_markup.family = (char*)"/usr/share/fonts/truetype/roboto/hinted/Roboto-Regular.ttf";
+    default_markup.size   = 32.0;
     default_markup.bold   = 0;
     default_markup.italic = 0;
     default_markup.spacing= 0.0;
@@ -27,26 +28,30 @@ FreetypeGl::FreetypeGl(){
     default_markup.strikethrough_color= COLOR_WHITE;
     default_markup.font = font_manager_get_from_markup(font_manager, &default_markup);
 
-    glGenTextures(1, &font_manager->atlas->id);
-    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, font_manager->atlas->width,
-                  font_manager->atlas->height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                  font_manager->atlas->data );
+
 
     text_shader = loadShader(shader_text_frag, shader_text_vert);
 
-    buffer = text_buffer_new( );
-    vec2 pen = {{80,20}};
-    text_buffer_printf(buffer, &pen, &default_markup, "TTTTTTeeeeeeeasdfasdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asf eeeessssssttttt", NULL);
-    text_buffer_align( buffer, &pen, ALIGN_CENTER );
+    //buffer = text_buffer_new( );
+    //vec2 pen = {{80,20}};
+    //text_buffer_printf(buffer, &pen, &default_markup, "f", NULL);
+    //text_buffer_align( buffer, &pen, ALIGN_CENTER );
 
-    vec4 bounds = text_buffer_get_bounds( buffer, &pen );
-    std::cout << "bounds " << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << " " << std::endl;
+    std::cout << static_cast<unsigned>('a') << " "
+              << static_cast<unsigned>('b') << " "
+              << static_cast<unsigned>('z') << " "
+              << static_cast<unsigned>('A') << " "
+              << static_cast<unsigned>('B') << " "
+              << static_cast<unsigned>('Z') << " "
+              << std::endl;
 
+//    vec4 bounds = text_buffer_get_bounds( buffer, &pen );
+//    std::cout << "bounds " << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << " " << std::endl;
+//    std::cout << "atlas texture-id: " << font_manager->atlas->id << std::endl;
+
+
+    addLatin1Alphabet();
+    updateTexture();
 }
 
 FreetypeGl::~FreetypeGl(){
@@ -56,12 +61,48 @@ FreetypeGl::~FreetypeGl(){
 }
 
 
+void FreetypeGl::FreetypeGl::updateTexture(){
+
+    glDeleteTextures(1, &font_manager->atlas->id);
+    glGenTextures(1, &font_manager->atlas->id);
+    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, font_manager->atlas->width,
+                  font_manager->atlas->height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                  font_manager->atlas->data );
+}
+
+
 void FreetypeGl::renderText(const std::string &text){
+
+    text_buffer_t* buffer = text_buffer_new( );
+    vec2 pen = {{20,20}};
+    text_buffer_printf(buffer, &pen, &default_markup, text.c_str(), NULL);
+    //updateTexture();
+
     glColor4f(1.00,1.00,1.00,1.00);
     glUseProgram(text_shader);
+
+    float left = 0;
+    float right = 640;
+    float bottom = -100;
+    float top = 580;
+    float zfar = 1;
+    float znear = -1;
+    proj.m00 = +2.0f/(right-left);
+    proj.m30 = -(right+left)/(right-left);
+    proj.m11 = +2.0f/(top-bottom);
+    proj.m31 = -(top+bottom)/(top-bottom);
+    proj.m22 = -2.0f/(zfar-znear);
+    proj.m32 = -(zfar+znear)/(zfar-znear);
+    proj.m33 = 1.0f;
+
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, identity.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, proj.data);
     glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
     glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
                  1.0f/font_manager->atlas->width,
@@ -81,7 +122,7 @@ void FreetypeGl::renderText(const std::string &text){
     glBlendColor( 0, 0, 0, 0 );
     glUseProgram( 0 );
 
-    //text_buffer_delete( buffer );
+    text_buffer_delete( buffer );
 }
 
 GLuint FreetypeGl::compileShader(const char* source, const GLenum type){
@@ -129,6 +170,12 @@ GLuint FreetypeGl::loadShader(char *frag, char *vert){
     }
 
     return handle;
+}
+
+void FreetypeGl::addLatin1Alphabet(){
+    const char a[] = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+    for(int i=0; i<strlen(a); i++)
+        texture_font_load_glyph(default_markup.font, a+i);
 }
 
 }

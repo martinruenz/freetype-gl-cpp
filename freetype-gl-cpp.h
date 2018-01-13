@@ -41,7 +41,9 @@ public:
     void renderText(const std::string& text);
 
     void renderText(const FreetypeGlText& text);
-    text_buffer_t* buffer;
+    //text_buffer_t* buffer;
+
+    void updateTexture();
 
     const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
@@ -50,14 +52,20 @@ public:
     const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
     const mat4 identity = {{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}};
 
+    mat4 proj = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+
 private:
 
     GLuint compileShader(const char* source, const GLenum type);
     GLuint loadShader(char* frag, char* vert);
 
+    void addLatin1Alphabet();
+
     GLuint text_shader = 0;
     font_manager_t* font_manager;
     markup_t default_markup;
+
+
 };
 
 
