@@ -33,19 +33,22 @@ FreetypeGl::FreetypeGl(){
     addLatin1Alphabet();
     updateTexture();
 
+    mat4_set_identity(&view);
+    mat4_set_identity(&projection);
+
     float left = 0;
     float right = 640;
     float bottom = -100;
     float top = 580;
     float zfar = 1;
     float znear = -1;
-    proj.m00 = +2.0f/(right-left);
-    proj.m30 = -(right+left)/(right-left);
-    proj.m11 = +2.0f/(top-bottom);
-    proj.m31 = -(top+bottom)/(top-bottom);
-    proj.m22 = -2.0f/(zfar-znear);
-    proj.m32 = -(zfar+znear)/(zfar-znear);
-    proj.m33 = 1.0f;
+    view.m00 = +2.0f/(right-left);
+    view.m30 = -(right+left)/(right-left);
+    view.m11 = +2.0f/(top-bottom);
+    view.m31 = -(top+bottom)/(top-bottom);
+    view.m22 = -2.0f/(zfar-znear);
+    view.m32 = -(zfar+znear)/(zfar-znear);
+    view.m33 = 1.0f;
 }
 
 FreetypeGl::~FreetypeGl(){
@@ -77,7 +80,6 @@ void FreetypeGl::FreetypeGl::updateTexture(){
                   font_manager->atlas->data );
 }
 
-
 void FreetypeGl::renderText(const std::string &text){
 
     text_buffer_t* buffer = text_buffer_new( );
@@ -89,8 +91,8 @@ void FreetypeGl::renderText(const std::string &text){
     glUseProgram(text_shader);
 
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, proj.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, view.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, projection.data);
     glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
     glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
                  1.0f/font_manager->atlas->width,
@@ -118,9 +120,9 @@ void FreetypeGl::renderText(const FreetypeGlText& text) const {
     glColor4f(1.00,1.00,1.00,1.00);
     glUseProgram(text_shader);
 
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, proj.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ), 1, 0, text.pose.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, view.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, projection.data);
     glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
     glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
                  1.0f/font_manager->atlas->width,
@@ -225,6 +227,25 @@ void FreetypeGlText::render(){
     manager->renderText(*this);
 }
 
+#ifdef WITH_EIGEN
+void FreetypeGlText::setPose(const Eigen::Matrix4f &pose){
+    eigen2mat4(pose, &this->pose);
+}
+
+void FreetypeGl::setView(const Eigen::Matrix4f& v){
+    eigen2mat4(v, &view);
+}
+
+void FreetypeGl::setProjection(const Eigen::Matrix4f& p){
+    eigen2mat4(p, &projection);
+}
+
+void eigen2mat4(const Eigen::Matrix4f& src, mat4 *dst){
+    memcpy(dst,
+           (src.Flags & Eigen::RowMajorBit) ? src.data() : src.transpose().data(),
+           16 * sizeof(float));
+}
+#endif
 
 
 }

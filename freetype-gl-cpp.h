@@ -3,6 +3,10 @@
 #include <string>
 #include <fontconfig/fontconfig.h>
 
+#ifdef WITH_EIGEN
+#include <eigen3/Eigen/Dense>
+#endif
+
 #include "freetype-gl.h"
 #include "font-manager.h"
 #include "vertex-buffer.h"
@@ -22,6 +26,10 @@ constexpr char* shader_text_vert = (char*)
 #include "generated/text.vert"
 ;
 
+#ifdef WITH_EIGEN
+void eigen2mat4(const Eigen::Matrix4f& src, ftgl::mat4* dst);
+#endif
+
 class FreetypeGl;
 
 class FreetypeGlText {
@@ -38,6 +46,10 @@ public:
 
     void render();
 
+#ifdef WITH_EIGEN
+    void setPose(const Eigen::Matrix4f& pose);
+#endif
+    inline void setPose(const mat4& p){ pose = p; }
     ftgl::mat4 pose;
 
 private:
@@ -67,9 +79,13 @@ public:
     void renderText(const std::string& text);
 
     void renderText(const FreetypeGlText& text) const;
-    //text_buffer_t* buffer;
 
     void updateTexture();
+
+#ifdef WITH_EIGEN
+    void setView(const Eigen::Matrix4f& v);
+    void setProjection(const Eigen::Matrix4f& p);
+#endif
 
     const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
@@ -78,7 +94,8 @@ public:
     const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
     const mat4 identity = {{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}};
 
-    mat4 proj = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+    mat4 view;
+    mat4 projection;
 
 private:
 

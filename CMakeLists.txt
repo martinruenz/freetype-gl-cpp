@@ -1,5 +1,13 @@
 cmake_minimum_required (VERSION 2.6)
 
+include(FeatureSummary)
+
+find_package(Freetype REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.0)
+find_package(GLEW)
+find_package(Eigen3)
+
 set(CMAKE_CXX_FLAGS "-std=c++14")
 
 function(make_includable input_file output_file)
@@ -23,16 +31,18 @@ add_subdirectory(external/freetype-gl)
 make_includable(external/freetype-gl/shaders/text.vert generated/text.vert)
 make_includable(external/freetype-gl/shaders/text.frag generated/text.frag)
 
+# Handle features
+feature_summary(WHAT ALL)
 
-
+#message("====")
+#get_property(.. GLOBAL PACKAGES_FOUND)
+#message()
+if(EIGEN3_FOUND)
+    add_definitions(-DWITH_EIGEN)
+endif()
 
 # Build example
 project (freetype-gl-cpp-example)
-
-find_package(glfw3 3.0 REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(GLEW REQUIRED)
 
 message("GLFW3_VERSION ${GLFW3_VERSION} ${GLFW3_LIBRARY_DIR}")
 include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH} external/freetype-gl)
