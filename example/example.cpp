@@ -27,10 +27,11 @@ int main(void)
 //    glViewport(0, 0, 640, 480);
 
     glClearColor(0.40,0.40,0.45,1.00);
+    FreetypeGlText text = text_renderer.createText(std::string("test asdf"));
     while (!glfwWindowShouldClose(window)){
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-        text_renderer.renderText("test asdfasdf asdf asdf asdf asdf asdf asdf asdf ");
-
+        //text_renderer.renderText("test asdfasdf asdf asdf asdf asdf asdf asdf asdf ");
+        text_renderer.renderText(text);
 
 //        glMatrixMode(GL_PROJECTION);
 //        glLoadIdentity();

@@ -45,6 +45,6 @@ include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH} external/freetype-
 #set(FREETYPE_GL_SOURCES
 #    external/freetype-gl/font-manager.c)
 
-add_executable(example example/example.cpp freetype-gl-cpp.h freetype-gl-cpp.cpp)
+add_executable(example example/example.cpp freetype-gl-cpp.h freetype-gl-cpp.cpp external/freetype-gl/demos/mat4.h external/freetype-gl/demos/mat4.c)
 target_link_libraries(example freetype-gl ${OPENGL_gl_LIBRARY} ${GLFW3_LIBRARY} ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
 

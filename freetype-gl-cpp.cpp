@@ -32,6 +32,20 @@ FreetypeGl::FreetypeGl(){
 
     addLatin1Alphabet();
     updateTexture();
+
+    float left = 0;
+    float right = 640;
+    float bottom = -100;
+    float top = 580;
+    float zfar = 1;
+    float znear = -1;
+    proj.m00 = +2.0f/(right-left);
+    proj.m30 = -(right+left)/(right-left);
+    proj.m11 = +2.0f/(top-bottom);
+    proj.m31 = -(top+bottom)/(top-bottom);
+    proj.m22 = -2.0f/(zfar-znear);
+    proj.m32 = -(zfar+znear)/(zfar-znear);
+    proj.m33 = 1.0f;
 }
 
 FreetypeGl::~FreetypeGl(){
@@ -40,9 +54,17 @@ FreetypeGl::~FreetypeGl(){
     glDeleteProgram(text_shader);
 }
 
+FreetypeGlText FreetypeGl::createText(const std::string& text){
+    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
+}
+
+template<typename... markup_text>
+FreetypeGlText FreetypeGl::createText(const markup_text&... content){
+    return FreetypeGlText(this, content...);
+}
+
 
 void FreetypeGl::FreetypeGl::updateTexture(){
-
     glDeleteTextures(1, &font_manager->atlas->id);
     glGenTextures(1, &font_manager->atlas->id);
     glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
@@ -65,20 +87,6 @@ void FreetypeGl::renderText(const std::string &text){
 
     glColor4f(1.00,1.00,1.00,1.00);
     glUseProgram(text_shader);
-
-    float left = 0;
-    float right = 640;
-    float bottom = -100;
-    float top = 580;
-    float zfar = 1;
-    float znear = -1;
-    proj.m00 = +2.0f/(right-left);
-    proj.m30 = -(right+left)/(right-left);
-    proj.m11 = +2.0f/(top-bottom);
-    proj.m31 = -(top+bottom)/(top-bottom);
-    proj.m22 = -2.0f/(zfar-znear);
-    proj.m32 = -(zfar+znear)/(zfar-znear);
-    proj.m33 = 1.0f;
 
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
@@ -103,6 +111,34 @@ void FreetypeGl::renderText(const std::string &text){
     glUseProgram( 0 );
 
     text_buffer_delete( buffer );
+}
+
+void FreetypeGl::renderText(const FreetypeGlText& text) const {
+
+    glColor4f(1.00,1.00,1.00,1.00);
+    glUseProgram(text_shader);
+
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, identity.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, proj.data);
+    glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
+    glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
+                 1.0f/font_manager->atlas->width,
+                 1.0f/font_manager->atlas->height,
+                 (float)font_manager->atlas->depth );
+
+    glEnable( GL_BLEND );
+
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
+
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glBlendColor( 1, 1, 1, 1 );
+
+    vertex_buffer_render( text.getTextBuffer()->buffer, GL_TRIANGLES );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBlendColor( 0, 0, 0, 0 );
+    glUseProgram( 0 );
 }
 
 GLuint FreetypeGl::compileShader(const char* source, const GLenum type){
@@ -157,5 +193,38 @@ void FreetypeGl::addLatin1Alphabet(){
     for(int i=0; i<strlen(a); i++)
         texture_font_load_glyph(default_markup.font, a+i);
 }
+
+// variadic template / va_list
+
+//markup_text
+template <typename... markup_text>
+FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
+    : manager(freetypeGL)
+{
+    text_buffer = text_buffer_new();
+    vec2 pen = {{0,0}};
+
+    text_buffer_printf(text_buffer, &pen, content...);
+    mat4_set_identity(&pose);
+}
+
+FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
+    manager = other.manager;
+    text_buffer = other.text_buffer;
+    pose = other.pose;
+    other.manager = NULL;
+    other.text_buffer = NULL;
+
+}
+
+FreetypeGlText::~FreetypeGlText(){
+    text_buffer_delete(text_buffer);
+}
+
+void FreetypeGlText::render(){
+    manager->renderText(*this);
+}
+
+
 
 }

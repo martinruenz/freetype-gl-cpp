@@ -22,25 +22,51 @@ constexpr char* shader_text_vert = (char*)
 #include "generated/text.vert"
 ;
 
-struct FreetypeGlText {
+class FreetypeGl;
 
+class FreetypeGlText {
+public:
+    template <typename... markup_text>
+    explicit FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content);
+    FreetypeGlText(FreetypeGlText&& other);
+    FreetypeGlText(const FreetypeGlText& other) = delete;
+    FreetypeGlText& operator=(const FreetypeGlText& other) = delete;
+
+    virtual ~FreetypeGlText();
+
+    inline const text_buffer_t* getTextBuffer() const { return text_buffer; }
+
+    void render();
+
+    ftgl::mat4 pose;
+
+private:
+
+    const FreetypeGl* manager;
+    text_buffer_t* text_buffer;
 };
 
 
 class FreetypeGl {
 public:
     FreetypeGl();
-    FreetypeGl(const FreetypeGl& that) = delete;
+    FreetypeGl(const FreetypeGl& other) = delete;
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
     ~FreetypeGl();
 
+    FreetypeGlText createText(const std::string& text);
+
+    template <typename... markup_text>
+    FreetypeGlText createText(const markup_text&... content);
+
+
     /**
-     * @brief renderText
+     * @brief renderText directly (slow but easy to use)
      * @param text
      */
     void renderText(const std::string& text);
 
-    void renderText(const FreetypeGlText& text);
+    void renderText(const FreetypeGlText& text) const;
     //text_buffer_t* buffer;
 
     void updateTexture();
