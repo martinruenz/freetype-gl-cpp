@@ -86,6 +86,8 @@ public:
     void setView(const Eigen::Matrix4f& v);
     void setProjection(const Eigen::Matrix4f& p);
 #endif
+    inline void setView(const ftgl::mat4& v){ view = v; }
+    inline void setProjection(const ftgl::mat4& p){ projection = p; }
 
     const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
