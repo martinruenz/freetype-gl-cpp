@@ -21,7 +21,12 @@ constexpr mat4 FreetypeGl::identity;
 
 FreetypeGl::FreetypeGl(){
     font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
+
+#ifdef WITH_FONTCONFIG
+    default_markup = createMarkup(findFont("DejaVu Sans"), 32);
+#else
     default_markup = createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32);
+#endif
 
     text_shader = loadShader(shader_text_frag, shader_text_vert);
 
@@ -61,7 +66,7 @@ markup_t FreetypeGl::createMarkup(std::string font_family,
                                   bool strikethrough,
                                   bool overline) const{
     markup_t result;
-    result.family = (char*)font_family.c_str();
+    result.family = strdup((char*)findFont(font_family).c_str());
     result.size   = size;
     result.bold   = bold;
     result.italic = italic;
@@ -81,15 +86,22 @@ markup_t FreetypeGl::createMarkup(std::string font_family,
     return result;
 }
 
-#ifdef WITH_FONTCONFIG
+
 std::string FreetypeGl::findFont(std::string &search_pattern) const {
 
-//#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
-//    throw std::runtime_error("This function is not implemented for windows yet");
-//#endif
+    // If the search pattern is a path already, return this path
+#if (defined(_WIN32) || defined(_WIN64))
+    if(search_pattern.find('\\') != std::string::npos) return search_pattern;
+#else
+    if(search_pattern.find('/') != std::string::npos) return search_pattern;
+#endif
 
+    // Otherwise (if the pattern is not a path), use fontconfig to search for font based on pattern
+#ifndef WITH_FONTCONFIG
+    throw std::runtime_error("Finding font " + search_pattern + " failed: Pattern was not a path and fontconfig could not be used to find font.");
+#else
     auto throwError = [&search_pattern]() {
-        throw std::runtime_error(std::string("FreetypeGL error -- could not find font: ") + search_pattern);
+        throw std::runtime_error("FreetypeGL error -- could not find font: " + search_pattern);
     };
 
     std::string filename;
@@ -109,8 +121,8 @@ std::string FreetypeGl::findFont(std::string &search_pattern) const {
     filename = (char *)(value.u.s);
     FcPatternDestroy( match );
     return filename;
-}
 #endif
+}
 
 //FreetypeGlText FreetypeGl::createText(const std::string& text){
 //    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);

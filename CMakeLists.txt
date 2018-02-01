@@ -7,7 +7,8 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 3.0)
 find_package(GLEW)
 find_package(Eigen3)
-find_package(FontConfig)
+find_package(FontConfig HINTS "./external/freetype-gl/cmake/Modules/FindFontConfig.cmake")
+# TODO fix this!
 
 set(CMAKE_CXX_FLAGS "-std=c++14")
 
