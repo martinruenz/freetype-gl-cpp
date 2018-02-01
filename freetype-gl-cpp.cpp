@@ -7,26 +7,17 @@
 
 namespace ftgl {
 
+constexpr vec4 FreetypeGl::COLOR_BLACK;
+constexpr vec4 FreetypeGl::COLOR_WHITE;
+constexpr vec4 FreetypeGl::COLOR_YELLOW;
+constexpr vec4 FreetypeGl::COLOR_GREY;
+constexpr vec4 FreetypeGl::COLOR_NONE;
+constexpr mat4 FreetypeGl::identity;
+
+
 FreetypeGl::FreetypeGl(){
     font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
-    default_markup.family = (char*)"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-    //default_markup.family = (char*)"/usr/share/fonts/truetype/roboto/hinted/Roboto-Regular.ttf";
-    default_markup.size   = 32.0;
-    default_markup.bold   = 0;
-    default_markup.italic = 0;
-    default_markup.spacing= 0.0;
-    default_markup.gamma  = 2.;
-    default_markup.foreground_color   = COLOR_WHITE;
-    default_markup.background_color   = COLOR_NONE;
-    default_markup.outline            = 0;
-    default_markup.outline_color      = COLOR_NONE;
-    default_markup.underline          = 0;
-    default_markup.underline_color    = COLOR_WHITE;
-    default_markup.overline           = 0;
-    default_markup.overline_color     = COLOR_WHITE;
-    default_markup.strikethrough      = 0;
-    default_markup.strikethrough_color= COLOR_WHITE;
-    default_markup.font = font_manager_get_from_markup(font_manager, &default_markup);
+    default_markup = createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32);
 
     text_shader = loadShader(shader_text_frag, shader_text_vert);
 
@@ -57,9 +48,48 @@ FreetypeGl::~FreetypeGl(){
     glDeleteProgram(text_shader);
 }
 
-FreetypeGlText FreetypeGl::createText(const std::string& text){
-    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
+markup_t FreetypeGl::createMarkup(std::string font_family,
+                                  float size,
+                                  const vec4 &color,
+                                  bool bold,
+                                  bool underlined,
+                                  bool italic,
+                                  bool strikethrough,
+                                  bool overline) const{
+    markup_t result;
+    result.family = (char*)font_family.c_str();
+    result.size   = size;
+    result.bold   = bold;
+    result.italic = italic;
+    result.spacing= 0.0;
+    result.gamma  = 2.;
+    result.foreground_color   = color;
+    result.background_color   = COLOR_NONE;
+    result.outline            = 0;
+    result.outline_color      = COLOR_NONE;
+    result.underline          = underlined;
+    result.underline_color    = color;
+    result.overline           = overline;
+    result.overline_color     = color;
+    result.strikethrough      = strikethrough;
+    result.strikethrough_color= color;
+    result.font = font_manager_get_from_markup(font_manager, &result);
+    return result;
 }
+
+//FreetypeGlText FreetypeGl::createText(const std::string& text){
+//    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
+//}
+
+FreetypeGlText FreetypeGl::createText(const std::string& text, markup_t* markup){
+    if(markup == NULL) return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
+    return FreetypeGlText(this, markup, text.c_str(), NULL);
+}
+
+//FreetypeGlText FreetypeGl::createText(const std::string &text, const vec4 &color, bool bold, bool underlined){
+
+
+//}
 
 template<typename... markup_text>
 FreetypeGlText FreetypeGl::createText(const markup_text&... content){

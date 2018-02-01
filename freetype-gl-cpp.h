@@ -66,7 +66,23 @@ public:
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
     ~FreetypeGl();
 
-    FreetypeGlText createText(const std::string& text);
+    markup_t createMarkup(std::string font_family,
+                          float size,
+                          const vec4& color=FreetypeGl::COLOR_WHITE,
+                          bool bold=false,
+                          bool underlined=false,
+                          bool italic=false,
+                          bool strikethrough=false,
+                          bool overline=false) const;
+
+    //FreetypeGlText createText(const std::string& text);
+    FreetypeGlText createText(const std::string& text, markup_t* markup = NULL);
+
+//    FreetypeGlText createText(const std::string& text,
+//                              const vec4& color = FreetypeGl::COLOR_WHITE,
+//                              float size = 32,
+//                              bool bold = false,
+//                              bool underlined = false);
 
     template <typename... markup_text>
     FreetypeGlText createText(const markup_text&... content);
@@ -89,12 +105,12 @@ public:
     inline void setView(const ftgl::mat4& v){ view = v; }
     inline void setProjection(const ftgl::mat4& p){ projection = p; }
 
-    const vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
-    const vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
-    const vec4 COLOR_YELLOW = {{1.0, 1.0, 0.0, 1.0}};
-    const vec4 COLOR_GREY   = {{0.5, 0.5, 0.5, 1.0}};
-    const vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
-    const mat4 identity = {{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}};
+    constexpr static vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
+    constexpr static vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
+    constexpr static vec4 COLOR_YELLOW = {{1.0, 1.0, 0.0, 1.0}};
+    constexpr static vec4 COLOR_GREY   = {{0.5, 0.5, 0.5, 1.0}};
+    constexpr static vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};
+    constexpr static mat4 identity = {{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}};
 
     mat4 view;
     mat4 projection;

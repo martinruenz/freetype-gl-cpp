@@ -33,11 +33,15 @@ int main(void)
     float angle = 0;
     while (!glfwWindowShouldClose(window)){
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+        // Render text
         text_renderer.renderText("Direct render (slower, but super simple)");
         text_renderer.renderText(text);
 
+        // Animate static text
         mat4_set_rotation(&rot, angle, 0, 0, 1);
-        angle += 0.01;
+        angle += 0.1;
+        rot.m03 = fmod(0.001 * angle, 0.01);
         text.setPose(rot);
 
         glfwSwapBuffers(window);
