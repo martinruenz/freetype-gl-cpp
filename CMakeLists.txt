@@ -7,6 +7,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 3.0)
 find_package(GLEW)
 find_package(Eigen3)
+find_package(FontConfig)
 
 set(CMAKE_CXX_FLAGS "-std=c++14")
 
@@ -41,11 +42,16 @@ if(EIGEN3_FOUND)
     add_definitions(-DWITH_EIGEN)
 endif()
 
+if(FONTCONFIG_FOUND)
+    add_definitions(-DWITH_FONTCONFIG)
+endif()
+
+
 # Build example
 project (freetype-gl-cpp-example)
 
 message("GLFW3_VERSION ${GLFW3_VERSION} ${GLFW3_LIBRARY_DIR}")
-include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH} external/freetype-gl)
+include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH} ${FONTCONFIG_INCLUDE_DIR} external/freetype-gl)
 #LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/res)
 
 #set(FREETYPE_GL_HEADERS
@@ -56,5 +62,5 @@ include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH} external/freetype-
 #    external/freetype-gl/font-manager.c)
 
 add_executable(example example/example.cpp freetype-gl-cpp.h freetype-gl-cpp.cpp external/freetype-gl/demos/mat4.h external/freetype-gl/demos/mat4.c)
-target_link_libraries(example freetype-gl ${OPENGL_gl_LIBRARY} ${GLFW3_LIBRARY} ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
+target_link_libraries(example freetype-gl ${OPENGL_gl_LIBRARY} ${GLFW3_LIBRARY} ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES} ${FONTCONFIG_LIBRARY})
 

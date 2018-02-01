@@ -83,6 +83,10 @@ public:
                           bool strikethrough=false,
                           bool overline=false) const;
 
+#ifdef WITH_FONTCONFIG
+    std::string findFont(std::string& search_pattern) const;
+#endif
+
     //FreetypeGlText createText(const std::string& text);
     FreetypeGlText createText(const std::string& text, markup_t* markup = NULL);
 
@@ -94,7 +98,7 @@ public:
 
     template <typename... markup_text>
     FreetypeGlText createText(const markup_text&... content){
-        return FreetypeGlText(this, content...);
+        return FreetypeGlText(this, content..., NULL);
     }
 
 

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <fontconfig/fontconfig.h>
 
 namespace ftgl {
 
@@ -79,6 +80,37 @@ markup_t FreetypeGl::createMarkup(std::string font_family,
     result.font = font_manager_get_from_markup(font_manager, &result);
     return result;
 }
+
+#ifdef WITH_FONTCONFIG
+std::string FreetypeGl::findFont(std::string &search_pattern) const {
+
+//#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
+//    throw std::runtime_error("This function is not implemented for windows yet");
+//#endif
+
+    auto throwError = [&search_pattern]() {
+        throw std::runtime_error(std::string("FreetypeGL error -- could not find font: ") + search_pattern);
+    };
+
+    std::string filename;
+    FcInit();
+    FcPattern *pattern = FcNameParse((const FcChar8*)search_pattern.c_str());
+    FcConfigSubstitute( 0, pattern, FcMatchPattern );
+    FcDefaultSubstitute( pattern );
+    FcResult font_result;
+    FcPattern *match = FcFontMatch(0, pattern, &font_result);
+    FcPatternDestroy(pattern);
+    if (!match) throwError();
+
+    FcValue value;
+    FcResult result = FcPatternGet( match, FC_FILE, 0, &value );
+    if (result) throwError();
+
+    filename = (char *)(value.u.s);
+    FcPatternDestroy( match );
+    return filename;
+}
+#endif
 
 //FreetypeGlText FreetypeGl::createText(const std::string& text){
 //    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
