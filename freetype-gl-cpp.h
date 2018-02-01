@@ -35,7 +35,15 @@ class FreetypeGl;
 class FreetypeGlText {
 public:
     template <typename... markup_text>
-    explicit FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content);
+    explicit FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content) : manager(freetypeGL)
+    {
+        text_buffer = text_buffer_new();
+        vec2 pen = {{0,0}};
+
+        text_buffer_printf(text_buffer, &pen, content...);
+        mat4_set_identity(&pose);
+    }
+
     FreetypeGlText(FreetypeGlText&& other);
     FreetypeGlText(const FreetypeGlText& other) = delete;
     FreetypeGlText& operator=(const FreetypeGlText& other) = delete;
@@ -85,7 +93,9 @@ public:
 //                              bool underlined = false);
 
     template <typename... markup_text>
-    FreetypeGlText createText(const markup_text&... content);
+    FreetypeGlText createText(const markup_text&... content){
+        return FreetypeGlText(this, content...);
+    }
 
 
     /**
@@ -107,6 +117,9 @@ public:
 
     constexpr static vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     constexpr static vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
+    constexpr static vec4 COLOR_RED = {{1.0, 0.0, 0.0, 1.0}};
+    constexpr static vec4 COLOR_GREEN = {{0.0, 1.0, 0.0, 1.0}};
+    constexpr static vec4 COLOR_BLUE = {{0.0, 0.0, 1.0, 1.0}};
     constexpr static vec4 COLOR_YELLOW = {{1.0, 1.0, 0.0, 1.0}};
     constexpr static vec4 COLOR_GREY   = {{0.5, 0.5, 0.5, 1.0}};
     constexpr static vec4 COLOR_NONE   = {{1.0, 1.0, 1.0, 0.0}};

@@ -9,6 +9,9 @@ namespace ftgl {
 
 constexpr vec4 FreetypeGl::COLOR_BLACK;
 constexpr vec4 FreetypeGl::COLOR_WHITE;
+constexpr vec4 FreetypeGl::COLOR_RED;
+constexpr vec4 FreetypeGl::COLOR_GREEN;
+constexpr vec4 FreetypeGl::COLOR_BLUE;
 constexpr vec4 FreetypeGl::COLOR_YELLOW;
 constexpr vec4 FreetypeGl::COLOR_GREY;
 constexpr vec4 FreetypeGl::COLOR_NONE;
@@ -91,10 +94,10 @@ FreetypeGlText FreetypeGl::createText(const std::string& text, markup_t* markup)
 
 //}
 
-template<typename... markup_text>
-FreetypeGlText FreetypeGl::createText(const markup_text&... content){
-    return FreetypeGlText(this, content...);
-}
+//template<typename... markup_text>
+//FreetypeGlText FreetypeGl::createText(const markup_text&... content){
+//    return FreetypeGlText(this, content...);
+//}
 
 
 void FreetypeGl::FreetypeGl::updateTexture(){
@@ -229,16 +232,16 @@ void FreetypeGl::addLatin1Alphabet(){
 // variadic template / va_list
 
 //markup_text
-template <typename... markup_text>
-FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
-    : manager(freetypeGL)
-{
-    text_buffer = text_buffer_new();
-    vec2 pen = {{0,0}};
+//template <typename... markup_text>
+//FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
+//    : manager(freetypeGL)
+//{
+//    text_buffer = text_buffer_new();
+//    vec2 pen = {{0,0}};
 
-    text_buffer_printf(text_buffer, &pen, content...);
-    mat4_set_identity(&pose);
-}
+//    text_buffer_printf(text_buffer, &pen, content...);
+//    mat4_set_identity(&pose);
+//}
 
 FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
     manager = other.manager;

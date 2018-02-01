@@ -29,6 +29,9 @@ int main(void)
     glClearColor(0.40,0.40,0.45,1.00);
     FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
 
+    markup_t markup = text_renderer.createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32, FreetypeGl::COLOR_RED);
+    FreetypeGlText text2 = text_renderer.createText(&markup, (char*)"Red static text", NULL);
+
     ftgl::mat4 rot;
     float angle = 0;
     while (!glfwWindowShouldClose(window)){
@@ -37,6 +40,7 @@ int main(void)
         // Render text
         text_renderer.renderText("Direct render (slower, but super simple)");
         text_renderer.renderText(text);
+        text_renderer.renderText(text2);
 
         // Animate static text
         mat4_set_rotation(&rot, angle, 0, 0, 1);
