@@ -20,7 +20,7 @@ constexpr mat4 FreetypeGl::identity;
 
 
 FreetypeGl::FreetypeGl(){
-    font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
+    font_manager = font_manager_new(1024, 1024, LCD_FILTERING_ON);
 
 #ifdef WITH_FONTCONFIG
     default_markup = createMarkup(findFont("DejaVu Sans"), 32);
@@ -57,7 +57,7 @@ FreetypeGl::~FreetypeGl(){
     glDeleteProgram(text_shader);
 }
 
-markup_t FreetypeGl::createMarkup(std::string font_family,
+markup_t FreetypeGl::createMarkup(const std::string& font_family,
                                   float size,
                                   const vec4 &color,
                                   bool bold,
@@ -87,7 +87,7 @@ markup_t FreetypeGl::createMarkup(std::string font_family,
 }
 
 
-std::string FreetypeGl::findFont(std::string &search_pattern) const {
+std::string FreetypeGl::findFont(const std::string &search_pattern) const {
 
     // If the search pattern is a path already, return this path
 #if (defined(_WIN32) || defined(_WIN64))

@@ -74,7 +74,7 @@ public:
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
     ~FreetypeGl();
 
-    markup_t createMarkup(std::string font_family,
+    markup_t createMarkup(const std::string& font_family,
                           float size,
                           const vec4& color=FreetypeGl::COLOR_WHITE,
                           bool bold=false,
@@ -83,7 +83,7 @@ public:
                           bool strikethrough=false,
                           bool overline=false) const;
 
-    std::string findFont(std::string& search_pattern) const;
+    std::string findFont(const std::string& search_pattern) const;
 
     //FreetypeGlText createText(const std::string& text);
     FreetypeGlText createText(const std::string& text, markup_t* markup = NULL);

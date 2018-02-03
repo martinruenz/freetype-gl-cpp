@@ -1,16 +1,17 @@
 cmake_minimum_required (VERSION 2.6)
 
+project (freetype-gl-cpp)
 include(FeatureSummary)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/external/freetype-gl/cmake/Modules/")
+set(CMAKE_CXX_FLAGS "-std=c++14")
 
 find_package(Freetype REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.0)
 find_package(GLEW)
 find_package(Eigen3)
-find_package(FontConfig HINTS "./external/freetype-gl/cmake/Modules/FindFontConfig.cmake")
-# TODO fix this!
-
-set(CMAKE_CXX_FLAGS "-std=c++14")
+find_package(FontConfig)
 
 function(make_includable input_file output_file)
     file(READ ${input_file} content)
