@@ -20,7 +20,7 @@ constexpr mat4 FreetypeGl::identity;
 
 
 FreetypeGl::FreetypeGl(){
-    font_manager = font_manager_new(512, 512, LCD_FILTERING_ON);
+    font_manager = font_manager_new(1024, 1024, LCD_FILTERING_ON);
 
 #ifdef WITH_FONTCONFIG
     default_markup = createMarkup(findFont("DejaVu Sans"), 32);
