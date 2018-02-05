@@ -78,17 +78,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake ${CMAKE_CU
 
 # Build example
 project (freetype-gl-cpp-example)
-
-#message("GLFW3_VERSION ${GLFW3_VERSION} ${GLFW3_LIBRARY_DIR}")
 include_directories(${GLFW3_LIBRARY_DIR} ${GLEW_INCLUDE_PATH})
-#LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/res)
-
-#set(FREETYPE_GL_HEADERS
-#    external/freetype-gl/freetype-gl.h
-#    external/freetype-gl/font-manager.h)
-
-#set(FREETYPE_GL_SOURCES
-#    external/freetype-gl/font-manager.c)
-
 add_executable(example example/example.cpp)
 target_link_libraries(example freetype-gl-cpp ${OPENGL_gl_LIBRARY} ${GLFW3_LIBRARY} ${GLEW_LIBRARY})
