@@ -20,6 +20,7 @@ constexpr mat4 FreetypeGl::identity;
 
 Markup::Markup(){
     description.font = NULL;
+    description.family = NULL;
     manager = NULL;
 }
 
@@ -32,7 +33,6 @@ Markup::Markup(const std::string &font_family,
                bool strikethrough,
                bool overline,
                FreetypeGl* freetype_gl){
-    //font_file = FreetypeGl::findFont(font_family);
     manager = freetype_gl;
     description.family = strdup((char*)FreetypeGl::findFont(font_family).c_str());
     description.size   = size;
@@ -71,22 +71,11 @@ Markup::~Markup(){
     if(description.family != NULL)
         free(description.family);
 
-    if(manager != NULL && description.font != NULL)
-        font_manager_delete_font(manager->font_manager, description.font);
+    //if(manager != NULL && description.font != NULL)
+    //    font_manager_delete_font(manager->font_manager, description.font);
+    //FIXME why is this crashing?
     //FIXME Remove glyphs as well!
 }
-
-//markup_text
-//template <typename... markup_text>
-//FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
-//    : manager(freetypeGL)
-//{
-//    text_buffer = text_buffer_new();
-//    vec2 pen = {{0,0}};
-
-//    text_buffer_printf(text_buffer, &pen, content...);
-//    mat4_set_identity(&pose);
-//}
 
 FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
     manager = other.manager;
@@ -109,6 +98,10 @@ void FreetypeGlText::render(){
 void FreetypeGlText::setPose(const Eigen::Matrix4f &pose){
     eigen2mat4(pose, &this->pose);
 }
+
+void FreetypeGlText::setPosition(const Eigen::Vector3f &position){
+    setPosition(position(0),position(1),position(2));
+}
 #endif
 
 FreetypeGl::FreetypeGl(){
@@ -126,21 +119,7 @@ FreetypeGl::FreetypeGl(){
     updateTexture();
 
     mat4_set_identity(&view);
-    mat4_set_identity(&projection);
-
-    float left = 0;
-    float right = 640;
-    float bottom = -100;
-    float top = 580;
-    float zfar = 1;
-    float znear = -1;
-    view.m00 = +2.0f/(right-left);
-    view.m30 = -(right+left)/(right-left);
-    view.m11 = +2.0f/(top-bottom);
-    view.m31 = -(top+bottom)/(top-bottom);
-    view.m22 = -2.0f/(zfar-znear);
-    view.m32 = -(zfar+znear)/(zfar-znear);
-    view.m33 = 1.0f;
+    mat4_set_orthographic(&projection, -500, 500, -500, 500, -1, 1); // If user forgets to provide matrix, this should be easier to debug than identity (it is more likely that something is visible)
 }
 
 FreetypeGl::~FreetypeGl(){
@@ -198,25 +177,14 @@ std::string FreetypeGl::findFont(const std::string &search_pattern) {
 #endif
 }
 
-//FreetypeGlText FreetypeGl::createText(const std::string& text){
-//    return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
-//}
-
-FreetypeGlText FreetypeGl::createText(const std::string& text, markup_t* markup){
+FreetypeGlText FreetypeGl::createText(const std::string& text, const markup_t* markup){
     if(markup == NULL) return FreetypeGlText(this, &this->default_markup.description, text.c_str(), NULL);
     return FreetypeGlText(this, markup, text.c_str(), NULL);
 }
 
-//FreetypeGlText FreetypeGl::createText(const std::string &text, const vec4 &color, bool bold, bool underlined){
-
-
-//}
-
-//template<typename... markup_text>
-//FreetypeGlText FreetypeGl::createText(const markup_text&... content){
-//    return FreetypeGlText(this, content...);
-//}
-
+FreetypeGlText FreetypeGl::createText(const std::string &text, const Markup& markup){
+    return createText(text, &markup.description);
+}
 
 void FreetypeGl::FreetypeGl::updateTexture(){
     glDeleteTextures(1, &font_manager->atlas->id);

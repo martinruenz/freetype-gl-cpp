@@ -81,8 +81,10 @@ public:
 
 #ifdef WITH_EIGEN
     void setPose(const Eigen::Matrix4f& pose);
+    void setPosition(const Eigen::Vector3f& position);
 #endif
     inline void setPose(const mat4& p){ pose = p; }
+    inline void setPosition(float x, float y, float z) { pose.m30 = x; pose.m31 = y; pose.m32 = z;}
     ftgl::mat4 pose;
 
 private:
@@ -111,23 +113,11 @@ public:
 
     static std::string findFont(const std::string& search_pattern);
 
-    //FreetypeGlText createText(const std::string& text);
-    FreetypeGlText createText(const std::string& text, markup_t* markup = NULL);
-
-//    FreetypeGlText createText(const std::string& text,
-//                              const vec4& color = FreetypeGl::COLOR_WHITE,
-//                              float size = 32,
-//                              bool bold = false,
-//                              bool underlined = false);
-
-    template <typename... markup_text>
-    FreetypeGlText createText(const markup_text&... content){
-        return FreetypeGlText(this, content..., NULL);
-    }
-
+    FreetypeGlText createText(const std::string& text, const Markup& markup);
+    FreetypeGlText createText(const std::string& text, const markup_t* markup = NULL);
 
     /**
-     * @brief renderText directly (slow but easy to use)
+     * @brief renderText Renders text directly (slow but easy to use)
      * @param text
      */
     void renderText(const std::string& text);
@@ -142,6 +132,11 @@ public:
 #endif
     inline void setView(const ftgl::mat4& v){ view = v; }
     inline void setProjection(const ftgl::mat4& p){ projection = p; }
+    inline void setProjectionOrtho(float left,   float right,
+                                   float bottom, float top,
+                                   float znear,  float zfar){
+        mat4_set_orthographic(&projection, left, right, bottom, top, znear, zfar);
+    }
 
     constexpr static vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     constexpr static vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
@@ -157,6 +152,12 @@ public:
     mat4 projection;
 
 private:
+
+    //TODO Make more secure and public again
+//    template <typename... markup_text>
+//    FreetypeGlText createTextImpl(const markup_text&... content){
+//        return FreetypeGlText(this, content..., NULL);
+//    }
 
     GLuint compileShader(const char* source, const GLenum type);
     GLuint loadShader(char* frag, char* vert);

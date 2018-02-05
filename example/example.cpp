@@ -2,35 +2,33 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+const float window_width = 1024;
+const float window_height = 768;
+
 int main(void)
 {
     GLFWwindow* window;
     if (!glfwInit()) return -1;
 
-    window = glfwCreateWindow(640, 480, "GLyphs", NULL, NULL);
+    window = glfwCreateWindow(window_width, window_height, "GLyphs", NULL, NULL);
     if (!window){
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
     if(glewInit() != GLEW_OK) throw std::runtime_error("Unable to initialise glew.");
-
-    FreetypeGl text_renderer;
-
-
-//    glMatrixMode(GL_MODELVIEW);
-//    glLoadIdentity();
-
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-
-//    glViewport(0, 0, 640, 480);
-
     glClearColor(0.40,0.40,0.45,1.00);
-    FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
 
+    // Create FreetypeGl instance and provide camera view / projection matrix
+    FreetypeGl text_renderer;
+    text_renderer.setProjectionOrtho(-window_width/2, window_width/2, -window_height/2, window_height, -1, 1);
+
+    // Create static texts
+    FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
     Markup markup = text_renderer.createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32, FreetypeGl::COLOR_RED);
-    FreetypeGlText text2 = text_renderer.createText(&markup.description, (char*)"Red static text");
+    FreetypeGlText text2 = text_renderer.createText(std::string("Red static text"), markup);
+    FreetypeGlText text3 = text_renderer.createText(std::string("Another red text"), markup);
+    text3.setPosition(100,100,0);
 
     ftgl::mat4 rot;
     float angle = 0;
@@ -41,6 +39,7 @@ int main(void)
         text_renderer.renderText("Direct render (slower, but super simple)");
         text_renderer.renderText(text);
         text_renderer.renderText(text2);
+        text_renderer.renderText(text3);
 
         // Animate static text
         mat4_set_rotation(&rot, angle, 0, 0, 1);
