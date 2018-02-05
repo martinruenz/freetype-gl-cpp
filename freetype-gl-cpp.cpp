@@ -18,12 +18,104 @@ constexpr vec4 FreetypeGl::COLOR_GREY;
 constexpr vec4 FreetypeGl::COLOR_NONE;
 constexpr mat4 FreetypeGl::identity;
 
+Markup::Markup(){
+    description.font = NULL;
+    manager = NULL;
+}
+
+Markup::Markup(const std::string &font_family,
+               float size,
+               const vec4 &color,
+               bool bold,
+               bool underlined,
+               bool italic,
+               bool strikethrough,
+               bool overline,
+               FreetypeGl* freetype_gl){
+    //font_file = FreetypeGl::findFont(font_family);
+    manager = freetype_gl;
+    description.family = strdup((char*)FreetypeGl::findFont(font_family).c_str());
+    description.size   = size;
+    description.bold   = bold;
+    description.italic = italic;
+    description.spacing= 0.0;
+    description.gamma  = 2.;
+    description.foreground_color   = color;
+    description.background_color   = FreetypeGl::COLOR_NONE;
+    description.outline            = 0;
+    description.outline_color      = FreetypeGl::COLOR_NONE;
+    description.underline          = underlined;
+    description.underline_color    = color;
+    description.overline           = overline;
+    description.overline_color     = color;
+    description.strikethrough      = strikethrough;
+    description.strikethrough_color= color;
+    description.font = font_manager_get_from_markup(manager->font_manager, &description);
+}
+
+Markup::Markup(Markup &&other){
+    description = other.description;
+    other.description.font = NULL;
+    other.description.family = NULL;
+    other.manager = NULL;
+}
+
+Markup& Markup::operator =(Markup &&other){
+    description = other.description;
+    other.description.font = NULL;
+    other.description.family = NULL;
+    other.manager = NULL;
+}
+
+Markup::~Markup(){
+    if(description.family != NULL)
+        free(description.family);
+
+    if(manager != NULL && description.font != NULL)
+        font_manager_delete_font(manager->font_manager, description.font);
+    //FIXME Remove glyphs as well!
+}
+
+//markup_text
+//template <typename... markup_text>
+//FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
+//    : manager(freetypeGL)
+//{
+//    text_buffer = text_buffer_new();
+//    vec2 pen = {{0,0}};
+
+//    text_buffer_printf(text_buffer, &pen, content...);
+//    mat4_set_identity(&pose);
+//}
+
+FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
+    manager = other.manager;
+    text_buffer = other.text_buffer;
+    pose = other.pose;
+    other.manager = NULL;
+    other.text_buffer = NULL;
+
+}
+
+FreetypeGlText::~FreetypeGlText(){
+    text_buffer_delete(text_buffer);
+}
+
+void FreetypeGlText::render(){
+    manager->renderText(*this);
+}
+
+#ifdef WITH_EIGEN
+void FreetypeGlText::setPose(const Eigen::Matrix4f &pose){
+    eigen2mat4(pose, &this->pose);
+}
+#endif
 
 FreetypeGl::FreetypeGl(){
     font_manager = font_manager_new(1024, 1024, LCD_FILTERING_ON);
 
 #ifdef WITH_FONTCONFIG
-    default_markup = createMarkup(findFont("DejaVu Sans"), 32);
+    default_markup = std::move(createMarkup(findFont("DejaVu Sans"), 32));
 #else
     default_markup = createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32);
 #endif
@@ -57,37 +149,19 @@ FreetypeGl::~FreetypeGl(){
     glDeleteProgram(text_shader);
 }
 
-markup_t FreetypeGl::createMarkup(const std::string& font_family,
+Markup FreetypeGl::createMarkup(const std::string& font_family,
                                   float size,
                                   const vec4 &color,
                                   bool bold,
                                   bool underlined,
                                   bool italic,
                                   bool strikethrough,
-                                  bool overline) const{
-    markup_t result;
-    result.family = strdup((char*)findFont(font_family).c_str());
-    result.size   = size;
-    result.bold   = bold;
-    result.italic = italic;
-    result.spacing= 0.0;
-    result.gamma  = 2.;
-    result.foreground_color   = color;
-    result.background_color   = COLOR_NONE;
-    result.outline            = 0;
-    result.outline_color      = COLOR_NONE;
-    result.underline          = underlined;
-    result.underline_color    = color;
-    result.overline           = overline;
-    result.overline_color     = color;
-    result.strikethrough      = strikethrough;
-    result.strikethrough_color= color;
-    result.font = font_manager_get_from_markup(font_manager, &result);
-    return result;
+                                  bool overline) {
+    return Markup(font_family, size, color, bold, underlined, italic, strikethrough, overline, this);
 }
 
 
-std::string FreetypeGl::findFont(const std::string &search_pattern) const {
+std::string FreetypeGl::findFont(const std::string &search_pattern) {
 
     // If the search pattern is a path already, return this path
 #if (defined(_WIN32) || defined(_WIN64))
@@ -129,7 +203,7 @@ std::string FreetypeGl::findFont(const std::string &search_pattern) const {
 //}
 
 FreetypeGlText FreetypeGl::createText(const std::string& text, markup_t* markup){
-    if(markup == NULL) return FreetypeGlText(this, &this->default_markup, text.c_str(), NULL);
+    if(markup == NULL) return FreetypeGlText(this, &this->default_markup.description, text.c_str(), NULL);
     return FreetypeGlText(this, markup, text.c_str(), NULL);
 }
 
@@ -161,7 +235,7 @@ void FreetypeGl::renderText(const std::string &text){
 
     text_buffer_t* buffer = text_buffer_new( );
     vec2 pen = {{20,20}};
-    text_buffer_printf(buffer, &pen, &default_markup, text.c_str(), NULL);
+    text_buffer_printf(buffer, &pen, &default_markup.description, text.c_str(), NULL);
     //updateTexture();
 
     glColor4f(1.00,1.00,1.00,1.00);
@@ -270,45 +344,12 @@ GLuint FreetypeGl::loadShader(char *frag, char *vert){
 void FreetypeGl::addLatin1Alphabet(){
     const char a[] = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
     for(int i=0; i<strlen(a); i++)
-        texture_font_load_glyph(default_markup.font, a+i);
+        texture_font_load_glyph(default_markup.description.font, a+i);
 }
 
 // variadic template / va_list
 
-//markup_text
-//template <typename... markup_text>
-//FreetypeGlText::FreetypeGlText(const FreetypeGl* freetypeGL, const markup_text&... content)
-//    : manager(freetypeGL)
-//{
-//    text_buffer = text_buffer_new();
-//    vec2 pen = {{0,0}};
-
-//    text_buffer_printf(text_buffer, &pen, content...);
-//    mat4_set_identity(&pose);
-//}
-
-FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
-    manager = other.manager;
-    text_buffer = other.text_buffer;
-    pose = other.pose;
-    other.manager = NULL;
-    other.text_buffer = NULL;
-
-}
-
-FreetypeGlText::~FreetypeGlText(){
-    text_buffer_delete(text_buffer);
-}
-
-void FreetypeGlText::render(){
-    manager->renderText(*this);
-}
-
 #ifdef WITH_EIGEN
-void FreetypeGlText::setPose(const Eigen::Matrix4f &pose){
-    eigen2mat4(pose, &this->pose);
-}
-
 void FreetypeGl::setView(const Eigen::Matrix4f& v){
     eigen2mat4(v, &view);
 }

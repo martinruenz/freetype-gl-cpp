@@ -29,8 +29,8 @@ int main(void)
     glClearColor(0.40,0.40,0.45,1.00);
     FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
 
-    markup_t markup = text_renderer.createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32, FreetypeGl::COLOR_RED);
-    FreetypeGlText text2 = text_renderer.createText(&markup, (char*)"Red static text");
+    Markup markup = text_renderer.createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32, FreetypeGl::COLOR_RED);
+    FreetypeGlText text2 = text_renderer.createText(&markup.description, (char*)"Red static text");
 
     ftgl::mat4 rot;
     float angle = 0;

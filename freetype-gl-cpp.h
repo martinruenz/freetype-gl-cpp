@@ -32,6 +32,31 @@ void eigen2mat4(const Eigen::Matrix4f& src, ftgl::mat4* dst);
 
 class FreetypeGl;
 
+class Markup {
+friend class FreetypeGl;
+public:
+    Markup();
+    Markup(const std::string& font_family,
+           float size,
+           const vec4 &color,
+           bool bold,
+           bool underlined,
+           bool italic,
+           bool strikethrough,
+           bool overline,
+           FreetypeGl* freetype_gl);
+
+    Markup(Markup&& other);
+    Markup(const Markup& other) = delete;
+    Markup& operator=(Markup&& other);
+    Markup& operator=(const Markup& other) = delete;
+    virtual ~Markup();
+
+    markup_t description;
+private:
+    FreetypeGl* manager;
+};
+
 class FreetypeGlText {
 public:
     template <typename... markup_text>
@@ -68,22 +93,23 @@ private:
 
 
 class FreetypeGl {
+friend class Markup;
 public:
     FreetypeGl();
     FreetypeGl(const FreetypeGl& other) = delete;
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
     ~FreetypeGl();
 
-    markup_t createMarkup(const std::string& font_family,
+    Markup createMarkup(const std::string& font_family,
                           float size,
                           const vec4& color=FreetypeGl::COLOR_WHITE,
                           bool bold=false,
                           bool underlined=false,
                           bool italic=false,
                           bool strikethrough=false,
-                          bool overline=false) const;
+                          bool overline=false);
 
-    std::string findFont(const std::string& search_pattern) const;
+    static std::string findFont(const std::string& search_pattern);
 
     //FreetypeGlText createText(const std::string& text);
     FreetypeGlText createText(const std::string& text, markup_t* markup = NULL);
@@ -139,7 +165,7 @@ private:
 
     GLuint text_shader = 0;
     font_manager_t* font_manager;
-    markup_t default_markup;
+    Markup default_markup;
 
 
 };
