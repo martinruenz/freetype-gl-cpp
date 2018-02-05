@@ -7,14 +7,12 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
-#include "freetype-gl.h"
-#include "font-manager.h"
-#include "vertex-buffer.h"
-#include "text-buffer.h"
-#include "markup.h"
-#include "demos/shader.h"
-#include "demos/mat4.h"
-#include "demos/screenshot-util.h"
+#include "freetype-gl/freetype-gl.h"
+#include "freetype-gl/font-manager.h"
+#include "freetype-gl/vertex-buffer.h"
+#include "freetype-gl/text-buffer.h"
+#include "freetype-gl/markup.h"
+#include "freetype-gl/demos/mat4.h"
 
 namespace ftgl {
 

@@ -1,0 +1,13 @@
+# freetype-gl-cpp.cmake
+# --------------------
+#
+# freetype-gl-cpp cmake module.
+#
+# freetype-gl-cpp_FOUND - true if package was found
+# freetype-gl-cpp_INCLUDE_DIR - Header directories
+# freetype-gl-cpp_LIBRARIES - Library directories
+
+@PACKAGE_INIT@
+
+set_and_check(freetype-gl-cpp_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set(freetype-gl-cpp_LIBRARIES freetype-gl-cpp)
