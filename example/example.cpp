@@ -20,7 +20,7 @@ int main(void)
     glClearColor(0.40,0.40,0.45,1.00);
 
     // Create FreetypeGl instance and provide camera view / projection matrix
-    FreetypeGl text_renderer;
+    FreetypeGl text_renderer(true);
     text_renderer.setProjectionOrtho(-window_width/2, window_width/2, -window_height/2, window_height, -1, 1);
 
     // Create static texts

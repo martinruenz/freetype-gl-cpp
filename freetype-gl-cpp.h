@@ -95,10 +95,12 @@ private:
 class FreetypeGl {
 friend class Markup;
 public:
-    FreetypeGl();
+    FreetypeGl(bool initialise = false);
     FreetypeGl(const FreetypeGl& other) = delete;
     FreetypeGl& operator=(const FreetypeGl& other) = delete;
     ~FreetypeGl();
+
+    void init();
 
     Markup createMarkup(const std::string& font_family,
                           float size,
@@ -120,9 +122,12 @@ public:
      */
     void renderText(const std::string& text);
 
-    void renderText(const FreetypeGlText& text) const;
+    void renderText(const FreetypeGlText& text, bool call_pre_post=true) const;
 
     void updateTexture();
+
+    void preRender() const;
+    void postRender() const;
 
 #ifdef WITH_EIGEN
     void setView(const Eigen::Matrix4f& v);

@@ -87,7 +87,8 @@ FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
 }
 
 FreetypeGlText::~FreetypeGlText(){
-    text_buffer_delete(text_buffer);
+    if(text_buffer)
+        text_buffer_delete(text_buffer);
 }
 
 void FreetypeGlText::render(){
@@ -104,7 +105,18 @@ void FreetypeGlText::setPosition(const Eigen::Vector3f &position){
 }
 #endif
 
-FreetypeGl::FreetypeGl(){
+FreetypeGl::FreetypeGl(bool initialise){
+    if(initialise) init();
+}
+
+FreetypeGl::~FreetypeGl(){
+    glDeleteTextures(1, &font_manager->atlas->id);
+    font_manager_delete(font_manager);
+    glDeleteProgram(text_shader);
+}
+
+void FreetypeGl::init(){
+    assert(!text_shader && "FreetypeGl was already initialised");
     font_manager = font_manager_new(1024, 1024, LCD_FILTERING_ON);
 
 #ifdef WITH_FONTCONFIG
@@ -120,12 +132,6 @@ FreetypeGl::FreetypeGl(){
 
     mat4_set_identity(&view);
     mat4_set_orthographic(&projection, -500, 500, -500, 500, -1, 1); // If user forgets to provide matrix, this should be easier to debug than identity (it is more likely that something is visible)
-}
-
-FreetypeGl::~FreetypeGl(){
-    glDeleteTextures(1, &font_manager->atlas->id);
-    font_manager_delete(font_manager);
-    glDeleteProgram(text_shader);
 }
 
 Markup FreetypeGl::createMarkup(const std::string& font_family,
@@ -178,6 +184,7 @@ std::string FreetypeGl::findFont(const std::string &search_pattern) {
 }
 
 FreetypeGlText FreetypeGl::createText(const std::string& text, const markup_t* markup){
+    assert(text_shader && "FreetypeGl needs to be initialised first");
     if(markup == NULL) return FreetypeGlText(this, &this->default_markup.description, text.c_str(), NULL);
     return FreetypeGlText(this, markup, text.c_str(), NULL);
 }
@@ -187,6 +194,7 @@ FreetypeGlText FreetypeGl::createText(const std::string &text, const Markup& mar
 }
 
 void FreetypeGl::FreetypeGl::updateTexture(){
+    assert(text_shader && "FreetypeGl needs to be initialised first");
     glDeleteTextures(1, &font_manager->atlas->id);
     glGenTextures(1, &font_manager->atlas->id);
     glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
@@ -199,67 +207,56 @@ void FreetypeGl::FreetypeGl::updateTexture(){
                   font_manager->atlas->data );
 }
 
-void FreetypeGl::renderText(const std::string &text){
+void FreetypeGl::preRender() const{
+    glColor4f(1.00,1.00,1.00,1.00);
+    glUseProgram(text_shader);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, view.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, projection.data);
+    glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
+    glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
+                 1.0f/font_manager->atlas->width,
+                 1.0f/font_manager->atlas->height,
+                 (float)font_manager->atlas->depth );
 
+    glEnable( GL_BLEND );
+
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
+
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glBlendColor( 1, 1, 1, 1 );
+}
+
+void FreetypeGl::postRender() const{
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glDisable( GL_BLEND );
+    glBlendColor( 0, 0, 0, 0 );
+    glUseProgram( 0 );
+}
+
+void FreetypeGl::renderText(const std::string &text){
+    assert(text_shader && "FreetypeGl needs to be initialised first");
     text_buffer_t* buffer = text_buffer_new( );
-    vec2 pen = {{20,20}};
+    vec2 pen = {{0,0}};
     text_buffer_printf(buffer, &pen, &default_markup.description, text.c_str(), NULL);
     //updateTexture();
 
-    glColor4f(1.00,1.00,1.00,1.00);
-    glUseProgram(text_shader);
-
+    preRender();
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ),1, 0, identity.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, view.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, projection.data);
-    glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
-    glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
-                 1.0f/font_manager->atlas->width,
-                 1.0f/font_manager->atlas->height,
-                 (float)font_manager->atlas->depth );
-
-    glEnable( GL_BLEND );
-
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
-
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glBlendColor( 1, 1, 1, 1 );
 
     vertex_buffer_render( buffer->buffer, GL_TRIANGLES );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-    glBlendColor( 0, 0, 0, 0 );
-    glUseProgram( 0 );
 
+    postRender();
     text_buffer_delete( buffer );
 }
 
-void FreetypeGl::renderText(const FreetypeGlText& text) const {
-
-    glColor4f(1.00,1.00,1.00,1.00);
-    glUseProgram(text_shader);
-
+void FreetypeGl::renderText(const FreetypeGlText& text, bool call_pre_post) const {
+    assert(text_shader && "FreetypeGl needs to be initialised first");
+    if(call_pre_post) preRender();
     glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ), 1, 0, text.pose.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "view" ), 1, 0, view.data);
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "projection" ), 1, 0, projection.data);
-    glUniform1i( glGetUniformLocation( text_shader, "tex" ), 0 );
-    glUniform3f( glGetUniformLocation( text_shader, "pixel" ),
-                 1.0f/font_manager->atlas->width,
-                 1.0f/font_manager->atlas->height,
-                 (float)font_manager->atlas->depth );
-
-    glEnable( GL_BLEND );
-
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, font_manager->atlas->id );
-
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glBlendColor( 1, 1, 1, 1 );
 
     vertex_buffer_render( text.getTextBuffer()->buffer, GL_TRIANGLES );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-    glBlendColor( 0, 0, 0, 0 );
-    glUseProgram( 0 );
+    if(call_pre_post) postRender();
 }
 
 GLuint FreetypeGl::compileShader(const char* source, const GLenum type){
