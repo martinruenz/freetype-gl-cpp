@@ -135,6 +135,8 @@ public:
 #endif
     inline void setView(const ftgl::mat4& v){ view = v; }
     inline void setProjection(const ftgl::mat4& p){ projection = p; }
+    inline void setView(const float* v){ memcpy(&view, v, 16 * sizeof(float)); }
+    inline void setProjection(const float* p){ memcpy(&projection, p, 16 * sizeof(float)); }
     inline void setProjectionOrtho(float left,   float right,
                                    float bottom, float top,
                                    float znear,  float zfar){

@@ -324,9 +324,13 @@ void FreetypeGl::setProjection(const Eigen::Matrix4f& p){
 }
 
 void eigen2mat4(const Eigen::Matrix4f& src, mat4 *dst){
-    memcpy(dst,
-           (src.Flags & Eigen::RowMajorBit) ? src.data() : src.transpose().data(),
-           16 * sizeof(float));
+    assert(src.innerStride() == 1 && src.outerStride() == 4);
+    if(src.IsRowMajor){
+        Eigen::Matrix4f tmp = src.transpose();
+        memcpy(dst, tmp.data(), 16 * sizeof(float));
+    } else {
+        memcpy(dst, src.data(), 16 * sizeof(float));
+    }
 }
 #endif
 

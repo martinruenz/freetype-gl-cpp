@@ -25,7 +25,7 @@ int main(void)
 
     // Create static texts
     FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
-    Markup markup = text_renderer.createMarkup("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32, FreetypeGl::COLOR_RED);
+    Markup markup = text_renderer.createMarkup("DejaVu Sans", 32, FreetypeGl::COLOR_RED);
     FreetypeGlText text2 = text_renderer.createText(std::string("Red static text"), markup);
     FreetypeGlText text3 = text_renderer.createText(std::string("Another red text"), markup);
     text3.setPosition(100,100,0);
