@@ -10,7 +10,7 @@ int main(void)
     GLFWwindow* window;
     if (!glfwInit()) return -1;
 
-    window = glfwCreateWindow(window_width, window_height, "GLyphs", NULL, NULL);
+    window = glfwCreateWindow(window_width, window_height, "freetype-gl-cpp example", NULL, NULL);
     if (!window){
         glfwTerminate();
         return -1;
@@ -21,14 +21,16 @@ int main(void)
 
     // Create FreetypeGl instance and provide camera view / projection matrix
     FreetypeGl text_renderer(true);
-    text_renderer.setProjectionOrtho(-window_width/2, window_width/2, -window_height/2, window_height, -1, 1);
+    text_renderer.setProjectionOrtho(-window_width/2, window_width/2, -window_height/2, window_height/2, -1,1);
 
     // Create static texts
     FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
     Markup markup = text_renderer.createMarkup("DejaVu Sans", 32, FreetypeGl::COLOR_RED);
     FreetypeGlText text2 = text_renderer.createText(std::string("Red static text"), markup);
     FreetypeGlText text3 = text_renderer.createText(std::string("Another red text"), markup);
-    text3.setPosition(100,100,0);
+    text3.setPosition(-50,-50,0.5);
+
+    text.setScalingFactor(2);
 
     ftgl::mat4 rot;
     float angle = 0;

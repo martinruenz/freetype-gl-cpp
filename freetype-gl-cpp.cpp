@@ -81,6 +81,7 @@ FreetypeGlText::FreetypeGlText(FreetypeGlText&& other){
     manager = other.manager;
     text_buffer = other.text_buffer;
     pose = other.pose;
+    scaling_factor = other.scaling_factor;
     other.manager = NULL;
     other.text_buffer = NULL;
 
@@ -104,6 +105,20 @@ void FreetypeGlText::setPosition(const Eigen::Vector3f &position){
     setPosition(position(0),position(1),position(2));
 }
 #endif
+
+mat4 FreetypeGlText::getModelMatrix() const{
+    mat4 m = pose;
+    m.m00 *= scaling_factor;
+    m.m01 *= scaling_factor;
+    m.m02 *= scaling_factor;
+    m.m10 *= scaling_factor;
+    m.m11 *= scaling_factor;
+    m.m12 *= scaling_factor;
+    m.m20 *= scaling_factor;
+    m.m21 *= scaling_factor;
+    m.m22 *= scaling_factor;
+    return m;
+}
 
 FreetypeGl::FreetypeGl(bool initialise){
     if(initialise) init();
@@ -131,7 +146,7 @@ void FreetypeGl::init(){
     updateTexture();
 
     mat4_set_identity(&view);
-    mat4_set_orthographic(&projection, -500, 500, -500, 500, -1, 1); // If user forgets to provide matrix, this should be easier to debug than identity (it is more likely that something is visible)
+    mat4_set_orthographic(&projection, -500, 500, -500, 500, -std::numeric_limits<float>::min(), std::numeric_limits<float>::max()); // If user forgets to provide matrix, this should be easier to debug than identity (it is more likely that something is visible)
 }
 
 Markup FreetypeGl::createMarkup(const std::string& font_family,
@@ -253,7 +268,7 @@ void FreetypeGl::renderText(const std::string &text){
 void FreetypeGl::renderText(const FreetypeGlText& text, bool call_pre_post) const {
     assert(text_shader && "FreetypeGl needs to be initialised first");
     if(call_pre_post) preRender();
-    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ), 1, 0, text.pose.data);
+    glUniformMatrix4fv( glGetUniformLocation( text_shader, "model" ), 1, 0, text.getModelMatrix().data);
 
     vertex_buffer_render( text.getTextBuffer()->buffer, GL_TRIANGLES );
     if(call_pre_post) postRender();

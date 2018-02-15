@@ -85,7 +85,11 @@ public:
     inline void setPosition(float x, float y, float z) { pose.m30 = x; pose.m31 = y; pose.m32 = z;}
     ftgl::mat4 pose;
 
+    inline void setScalingFactor(float s){ scaling_factor = s; }
+    ftgl::mat4 getModelMatrix() const;
+
 private:
+    float scaling_factor = 1;
 
     const FreetypeGl* manager;
     text_buffer_t* text_buffer;
@@ -141,6 +145,10 @@ public:
                                    float bottom, float top,
                                    float znear,  float zfar){
         mat4_set_orthographic(&projection, left, right, bottom, top, znear, zfar);
+    }
+    inline void setProjectionPresp(float fovy,   float aspect,
+                                   float znear,  float zfar){
+        mat4_set_perspective(&projection, fovy, aspect, znear, zfar);
     }
 
     constexpr static vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
