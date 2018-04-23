@@ -19,6 +19,22 @@ text_renderer.renderText(text);
 Check the [example](example/example.cpp):
 ![Example output](example/screenshot.jpg)
 
+## Build / Install
+
+* Checkout recursively, to get *freetype-gl* dependency
+* Use CMake and make as usual
+
+
+```Bash
+git clone --recurse-submodules git@github.com:martinruenz/freetype-gl-cpp.git
+cd freetype-gl-cpp
+mkdir build
+cd build
+cmake ..
+cmake --build .
+make install
+```
+
 
 ## Known issues / todos:
 * Fix bug: If font-size != default size -> font not visible (Workaround, use: `FreetypeGlText::setScalingFactor`)
