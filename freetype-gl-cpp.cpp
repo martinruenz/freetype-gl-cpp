@@ -327,8 +327,6 @@ void FreetypeGl::addLatin1Alphabet(){
         texture_font_load_glyph(default_markup.description.font, a+i);
 }
 
-// variadic template / va_list
-
 #ifdef WITH_EIGEN
 void FreetypeGl::setView(const Eigen::Matrix4f& v){
     eigen2mat4(v, &view);

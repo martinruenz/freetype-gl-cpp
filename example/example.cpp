@@ -24,11 +24,10 @@ int main(void)
     text_renderer.setProjectionOrtho(-window_width/2, window_width/2, -window_height/2, window_height/2, -1,1);
 
     // Create static texts
-    FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
     Markup markup = text_renderer.createMarkup("DejaVu Sans", 32, FreetypeGl::COLOR_RED);
+    FreetypeGlText text = text_renderer.createText(std::string("Static text (faster)"));
     FreetypeGlText text2 = text_renderer.createText(std::string("Red static text"), markup);
-    FreetypeGlText text3 = text_renderer.createText(std::string("Another red text"), markup);
-    text3.setPosition(-50,-50,0.5);
+    text2.setPosition(-50,-150,0.5);
 
     text.setScalingFactor(2);
 
@@ -38,10 +37,9 @@ int main(void)
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         // Render text
-        text_renderer.renderText("Direct render (slower, but super simple)");
+        text_renderer.renderText("Direct render\n (slower, but super simple)");
         text_renderer.renderText(text);
         text_renderer.renderText(text2);
-        text_renderer.renderText(text3);
 
         // Animate static text
         mat4_set_rotation(&rot, angle, 0, 0, 1);

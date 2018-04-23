@@ -166,12 +166,6 @@ public:
 
 private:
 
-    //TODO Make more secure and public again
-//    template <typename... markup_text>
-//    FreetypeGlText createTextImpl(const markup_text&... content){
-//        return FreetypeGlText(this, content..., NULL);
-//    }
-
     GLuint compileShader(const char* source, const GLenum type);
     GLuint loadShader(char* frag, char* vert);
 
@@ -180,8 +174,6 @@ private:
     GLuint text_shader = 0;
     font_manager_t* font_manager;
     Markup default_markup;
-
-
 };
 
 
