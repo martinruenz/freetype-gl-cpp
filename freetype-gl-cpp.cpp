@@ -1,6 +1,7 @@
 #include "freetype-gl-cpp.h"
 
 #include <cstring>
+#include <cassert>
 #include <vector>
 #include <iostream>
 #include <stdexcept>
@@ -327,6 +328,34 @@ void FreetypeGl::addLatin1Alphabet(){
         texture_font_load_glyph(default_markup.description.font, a+i);
 }
 
+
+void FreetypeGl::setView(const ftgl::mat4& v){
+    view = v;
+}
+
+void FreetypeGl::setProjection(const ftgl::mat4& p){
+    projection = p;
+}
+
+void FreetypeGl::setView(const float* v){
+    std::memcpy(&view, v, 16 * sizeof(float));
+}
+
+void FreetypeGl::setProjection(const float* p){
+    std::memcpy(&projection, p, 16 * sizeof(float));
+}
+
+void FreetypeGl::setProjectionOrtho(float left,   float right,
+                               float bottom, float top,
+                               float znear,  float zfar){
+    mat4_set_orthographic(&projection, left, right, bottom, top, znear, zfar);
+}
+
+void FreetypeGl::setProjectionPresp(float fovy,   float aspect,
+                               float znear,  float zfar){
+    mat4_set_perspective(&projection, fovy, aspect, znear, zfar);
+}
+
 #ifdef WITH_EIGEN
 void FreetypeGl::setView(const Eigen::Matrix4f& v){
     eigen2mat4(v, &view);
@@ -340,9 +369,9 @@ void eigen2mat4(const Eigen::Matrix4f& src, mat4 *dst){
     assert(src.innerStride() == 1 && src.outerStride() == 4);
     if(src.IsRowMajor){
         Eigen::Matrix4f tmp = src.transpose();
-        memcpy(dst, tmp.data(), 16 * sizeof(float));
+        std::memcpy(dst, tmp.data(), 16 * sizeof(float));
     } else {
-        memcpy(dst, src.data(), 16 * sizeof(float));
+        std::memcpy(dst, src.data(), 16 * sizeof(float));
     }
 }
 #endif

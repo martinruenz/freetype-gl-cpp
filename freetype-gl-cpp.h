@@ -137,19 +137,15 @@ public:
     void setView(const Eigen::Matrix4f& v);
     void setProjection(const Eigen::Matrix4f& p);
 #endif
-    inline void setView(const ftgl::mat4& v){ view = v; }
-    inline void setProjection(const ftgl::mat4& p){ projection = p; }
-    inline void setView(const float* v){ memcpy(&view, v, 16 * sizeof(float)); }
-    inline void setProjection(const float* p){ memcpy(&projection, p, 16 * sizeof(float)); }
-    inline void setProjectionOrtho(float left,   float right,
+    void setView(const ftgl::mat4& v);
+    void setProjection(const ftgl::mat4& p);
+    void setView(const float* v);
+    void setProjection(const float* p);
+    void setProjectionOrtho(float left,   float right,
                                    float bottom, float top,
-                                   float znear,  float zfar){
-        mat4_set_orthographic(&projection, left, right, bottom, top, znear, zfar);
-    }
-    inline void setProjectionPresp(float fovy,   float aspect,
-                                   float znear,  float zfar){
-        mat4_set_perspective(&projection, fovy, aspect, znear, zfar);
-    }
+                                   float znear,  float zfar);
+    void setProjectionPresp(float fovy,   float aspect,
+                                   float znear,  float zfar);
 
     constexpr static vec4 COLOR_BLACK  = {{0.0, 0.0, 0.0, 1.0}};
     constexpr static vec4 COLOR_WHITE  = {{1.0, 1.0, 1.0, 1.0}};
