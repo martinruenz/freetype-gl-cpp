@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string>
-#include <fontconfig/fontconfig.h>
 
 #ifdef WITH_EIGEN
 #include <eigen3/Eigen/Dense>

@@ -5,7 +5,10 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+
+#ifdef WITH_FONTCONFIG
 #include <fontconfig/fontconfig.h>
+#endif
 
 namespace ftgl {
 
